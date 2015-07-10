@@ -18,7 +18,7 @@ myconf = AppConfig(reload=True)
 
 if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-    db = DAL(myconf.take('db.uri'), pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'])
+    db = DAL(myconf.take('db.uri'), pool_size=myconf.take('db.pool_size', cast=int))
 else:
     ## connect to Google BigTable (optional 'google:datastore://namespace')
     db = DAL('google:datastore+ndb')
@@ -109,20 +109,20 @@ db.define_table('category',
 	Field('category',unique=True,notnull=True,label=T('Category')),
 	format = '%(category)s')
 
-db.define_table('value',
+db.define_table('val',
 	Field('category',db.category,notnull=True,label=T('Category')),
 	Field('val',notnull=True,label=T('Value')),
-	Field('deleted',boolean,default=False,label=T('Deleted')))
-db.value.category.requires=IS_IN_DB(db,'category.id','%(category)s')
+	Field('deleted','boolean',default=False,label=T('Deleted')))
+db.val.category.requires=IS_IN_DB(db,'category.id','%(category)s')
 
-def getCategory(value):
-	row = db(db.category.category==value).select().first()
+def getCategory(val):
+	row = db(db.category.category==val).select().first()
 
-def valueNotEmpty(value):
+def valueNotEmpty(val):
 	if(getCategory(value)==None):
 		return False
 	else :
-		row = db(db.value.category == getCategory(value).id).select().first()
+		row = db(db.val.category == getCategory(val).id).select().first()
 		if row!=None:
 			return True
 		else:
@@ -138,14 +138,14 @@ def makeYears():
 
 makeYears()
 
-db.define_table('Guest',
+db.define_table('guest',
 	Field('firstname',notnull=True,label=T('Firstname')),
 	Field('familyname',notnull=True,label=T('Family name')),
 	Field('birth_year','integer',notnull=True,label=T('Birth year')),
-	Field('sex',db.value,notnull=True,label=T('Sex')),
+	Field('sex',db.val,notnull=True,label=T('Sex')),
 	Field('national_number',notnull=True,label=T('National number')),
-	Field('registration_date',date,default=request.now,label=T('Registration date')),
-	Field('user',db.user,notmull=True,label=T('Registered by')),
+	Field('registration_date','date',default=request.now,label=T('Registration date')),
+	Field('registrator',db.user,notnull=True,label=T('Registered by')),
 	Field('age',compute=lambda r: (datetime.datetime.now().year) - int(r['birth_year']),label=T('Age')),
 	format = '%(name)s')
 
