@@ -96,10 +96,13 @@ auth.settings.reset_password_requires_verification = True
 #########################################################################
 
 #########################################################################
-#defining some sets i need 
+#defining some sets i need
 years = []
 guest_errors = None
 guest_errors = []
+
+talk_errors = None
+talk_errors = []
 #########################################################################
 ## after defining tables, uncomment below to enable auditing
 auth.enable_record_versioning(db)
@@ -154,41 +157,10 @@ db.guest.birth_year.requires=IS_IN_SET(years,zero=T('Choose One'),error_message 
 if(auth.user!=None):
 	guests_User = db(db.guest.user==auth.user.id)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+db.define_table('talk',
+    Field('registrator',db.user,notnull=True,label=T('Registered by')),
+    Field('guest',db.guest,notnull=True,label=T('Guest')),
+    Field('date_talk','date',default=request.now,label=T('Date Talk')),
+    Field('type_of_talk',db.val,notnull=True,label=T('Type of talk')),
+    Field('story','text',notnull=True,label=T('Story'))
+)

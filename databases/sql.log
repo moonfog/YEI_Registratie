@@ -1,0 +1,92 @@
+timestamp: 2015-07-13T10:53:14.223000
+CREATE TABLE user(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name CHAR(128),
+    last_name CHAR(128),
+    email CHAR(512),
+    password CHAR(512),
+    registration_key CHAR(512),
+    reset_password_key CHAR(512),
+    registration_id CHAR(512)
+);
+success!
+timestamp: 2015-07-13T10:53:14.379000
+CREATE TABLE group_role(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2015-07-13T10:53:14.473000
+CREATE TABLE group_membership(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES user (id) ON DELETE CASCADE,
+    group_id INTEGER REFERENCES group_role (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-07-13T10:53:14.629000
+CREATE TABLE permission(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER REFERENCES group_role (id) ON DELETE CASCADE,
+    name CHAR(512),
+    table_name CHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2015-07-13T10:53:14.739000
+CREATE TABLE auth_event(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_stamp TIMESTAMP,
+    client_ip CHAR(512),
+    user_id INTEGER REFERENCES user (id) ON DELETE CASCADE,
+    origin CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2015-07-13T10:53:14.864000
+CREATE TABLE auth_cas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES user (id) ON DELETE CASCADE,
+    created_on TIMESTAMP,
+    service CHAR(512),
+    ticket CHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2015-07-13T10:53:14.973000
+CREATE TABLE category(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category CHAR(512) NOT NULL UNIQUE
+);
+success!
+timestamp: 2015-07-13T10:53:15.082000
+CREATE TABLE val(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category INTEGER REFERENCES category (id) ON DELETE CASCADE,
+    val CHAR(512) NOT NULL,
+    deleted CHAR(1)
+);
+success!
+timestamp: 2015-07-13T10:53:15.192000
+CREATE TABLE guest(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    firstname CHAR(512) NOT NULL,
+    familyname CHAR(512) NOT NULL,
+    birth_year INTEGER NOT NULL,
+    sex INTEGER REFERENCES val (id) ON DELETE CASCADE,
+    national_number CHAR(512) NOT NULL,
+    registration_date DATE,
+    registrator INTEGER REFERENCES user (id) ON DELETE CASCADE,
+    age CHAR(512)
+);
+success!
+timestamp: 2015-07-14T12:18:19.329000
+CREATE TABLE talk(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    registrator INTEGER REFERENCES user (id) ON DELETE CASCADE,
+    guest INTEGER REFERENCES guest (id) ON DELETE CASCADE,
+    date_talk DATE,
+    type_of_talk INTEGER REFERENCES val (id) ON DELETE CASCADE,
+    story TEXT NOT NULL
+);
+success!
