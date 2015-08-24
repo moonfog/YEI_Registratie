@@ -103,6 +103,9 @@ guest_errors = []
 
 talk_errors = None
 talk_errors = []
+
+competence_errors = None
+competence_errors = []
 #########################################################################
 ## after defining tables, uncomment below to enable auditing
 auth.enable_record_versioning(db)
@@ -150,17 +153,53 @@ db.define_table('guest',
 	Field('registration_date','date',default=request.now,label=T('Registration date')),
 	Field('registrator',db.user,notnull=True,label=T('Registered by')),
 	Field('age',compute=lambda r: (datetime.datetime.now().year) - int(r['birth_year']),label=T('Age')),
-	format = '%(name)s')
+	format = '%(familyname)s')
 
 db.guest.birth_year.requires=IS_IN_SET(years,zero=T('Choose One'),error_message = T('Choose a year from the list'))
+db.guest.sex.requires=IS_IN_SET(["man","vrouw"],zero=T('Choose One'))
 
 if(auth.user!=None):
 	guests_User = db(db.guest.user==auth.user.id)
+#programma negeert deze methode als een natgeregende hond met luizen , geen idee waarom voorlopig opgelost met een set
+def createDropDownListGuests():
+
+    if(getCategory('guest.sex')!=None and valueNotEmpty('guest.sex')):
+        query = ((db.val.category == getCategory("guest.sex").id) & (db.val.deleted==False))
+        db.guest.sex.requires=IS_IN_DB(db(query),'val.id','%(val)s')
+
+    else:
+        element='guest.sex'
+        guest_errors.append(element)
+
+createDropDownListGuests()
+
+
 
 db.define_table('talk',
     Field('registrator',db.user,notnull=True,label=T('Registered by')),
     Field('guest',db.guest,notnull=True,label=T('Guest')),
     Field('date_talk','date',default=request.now,label=T('Date Talk')),
     Field('type_of_talk',db.val,notnull=True,label=T('Type of talk')),
-    Field('story','text',notnull=True,label=T('Story'))
+    Field('story','text',label=T('Story')),
+    format ='%(type_of_talk)s'
 )
+
+db.talk.type_of_talk.requires=IS_IN_SET(["intake","trajectbegeleiding","evaluatie"])
+
+db.define_table('competence',
+    Field('guest',db.guest,notnull=True,label=T('Guest')),
+    Field('state_of_competence',db.val,notnull=True,label=T('State')),            
+    Field('competence',db.val,notnull=True,label=T('Competence')),
+    Field('type_of_competence',db.val,label=T('Type of competence')),
+    format = '%(competence)s')
+
+db.competence.state_of_competence.requires=IS_IN_SET(["kan","wil"])
+
+db.define_table('action',
+    Field('guest',db.guest,notnull=True,label=T('Guest')),
+    Field ('guidance',db.val,label=T('Guidance')),
+    Field('startdate','date',default=request.now,notnull=True,label=T('startdate')),
+    Field('date_to_aim', 'date', label=('Aimdate')),
+    Field('competence',db.val, label=('Competence')),
+    Field('story','text',label=T('Story')),
+    Field('success','boolean',label=T('Success')))
